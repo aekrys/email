@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Почта - {% block title %}{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #161b22;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            color: #58a6ff;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .user-menu a {
+            text-decoration: none;
+        }
+        .nav {
+            background: #161b22;
+            padding: 0.5rem 2rem;
+            border-bottom: 1px solid #30363d;
+        }
+        .nav a {
+            color: #8b949e;
+            text-decoration: none;
+            margin-right: 1.5rem;
+            padding: 0.3rem 0;
+        }
+        .nav a:hover, .nav a.active { color: #58a6ff; border-bottom: 2px solid #58a6ff; }
+        .nav .compose-link {
+            float: right;
+            color: #58a6ff;
+        }
+        .container {
+            flex: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #238636;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-danger { background: #da3633; }
+        .email-list {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .email-item {
+            padding: 1rem;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .email-item:last-child { border-bottom: none; }
+        .email-item.unread { background: #1f2a3f; }
+        .email-sender { min-width: 150px; color: #58a6ff; }
+        .email-subject { flex: 1; }
+        .email-subject a { color: #c9d1d9; text-decoration: none; }
+        .email-date { color: #8b949e; min-width: 120px; text-align: right; }
+        .email-actions { display: flex; gap: 0.5rem; }
+        .form-group {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 2rem;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+        }
+        .form-group textarea { min-height: 200px; }
+        .email-detail {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 2rem;
+        }
+        .email-meta { color: #8b949e; margin: 1rem 0; }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .email-count {
+            color: #8b949e;
+            background: #161b22;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            border: 1px solid #30363d;
+        }
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: #8b949e;
+            border-top: 1px solid #30363d;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="{% url 'inbox' %}" class="logo">Meow Mail</a>
+        <div class="user-menu">
+            {% if user.is_authenticated %}
+                <span>{{ user.username }}</span>
+                <a href="{% url 'logout' %}" style="color: #8b949e;">Выйти</a>
+            {% else %}
+                <a href="{% url 'login' %}" style="color: #58a6ff;">Вход</a>
+                <a href="{% url 'signup' %}" style="color: #8b949e;">Регистрация</a>
+            {% endif %}
+        </div>
+    </header>
+
+    {% if user.is_authenticated %}
+    <nav class="nav">
+        <a href="{% url 'inbox' %}" {% if request.resolver_match.url_name == 'inbox' %}class="active"{% endif %}>Входящие</a>
+        <a href="{% url 'sent' %}" {% if request.resolver_match.url_name == 'sent' %}class="active"{% endif %}>Отправленные</a>
+        <a href="{% url 'archive' %}" {% if request.resolver_match.url_name == 'archive' %}class="active"{% endif %}>Архив</a>
+        <a href="{% url 'trash' %}" {% if request.resolver_match.url_name == 'trash' %}class="active"{% endif %}>Корзина</a>
+        <a href="{% url 'new_email' %}" class="compose-link">+ Новое письмо</a>
+    </nav>
+    {% endif %}
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        Почтовый клиент Meow
+    </footer>
+</body>
+</html>
