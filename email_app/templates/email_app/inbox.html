@@ -10,10 +10,16 @@
 <div class="email-list">
     {% for email in emails %}
     <div class="email-item {% if not email.is_read %}unread{% endif %}">
-        <div class="email-sender">{{ email.sender }}</div>
-        <div class="email-subject">
-            <a href="{% url 'open_email' email.id %}">{{ email.topic }}</a>
-        </div>
+    <div class="email-read-status">
+        {% if email.is_read %}
+            <span style="color: #58a6ff;">👁️</span>  {# открытый глаз #}
+        {% else %}
+            <span style="color: #8b949e;">📬</span>  {# закрытый глаз #}
+        {% endif %}
+    </div>
+    <div class="email-subject">
+        <a href="{% url 'open_email' email.id %}">{{ email.topic }}</a>
+    </div>
         <div class="email-date">{{ email.date_time|date:"d.m.Y H:i" }}</div>
         <div class="email-actions">
             <a href="{% url 'archive_email' email.id %}" class="btn" style="background: #1f2a3f; color: #8b949e;">📁</a>
