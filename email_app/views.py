@@ -1,13 +1,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Email
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm  # Встроенная форма для регистрации
+from django.contrib.auth.models import User  # Встроенная модель пользователя
+from django.contrib.auth import login, logout  # Функции для авторизации
+from django.contrib.auth.decorators import login_required  # Декоратор для проверки авторизации пользователя
 
 
-# Зарегистрироваться
 def signup(request):
+    """
+    Функция для регистрации нового пользователя
+
+    При отправке пользователем формы проверяет
+    данные на корректность, сохраняет нового пользователя
+    в базе данных, направляет на главную (страница с входящими)
+    """
+
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -24,9 +31,15 @@ def signup(request):
     return render(request, template, context)
 
 
-# Входящие письма
 @login_required
 def inbox(request):
+    """
+    Функция для входящих писем
+
+    Направляет неавторизованного пользователя на страницу входа в аккаунт
+    Отображает все входящие письма пользователя
+    """
+
     emails = Email.objects.filter(user=request.user, folder="inbox")
 
     template = "email_app/inbox.html"
@@ -35,9 +48,15 @@ def inbox(request):
     return render(request, template, context)
 
 
-# Отправленные письма
 @login_required
 def sent(request):
+    """
+    Функция для отправленных писем
+
+    Направляет неавторизованного пользователя на страницу входа в аккаунт
+    Отображает все отправленные письма пользователя
+    """
+
     emails = Email.objects.filter(user=request.user, folder="sent")
 
     template = "email_app/sent.html"
@@ -46,9 +65,15 @@ def sent(request):
     return render(request, template, context)
 
 
-# Архив
 @login_required
 def archive(request):
+    """
+    Функция для архива
+
+    Направляет неавторизованного пользователя на страницу входа в аккаунт
+    Отображает все архивированные письма пользователя
+    """
+
     emails = Email.objects.filter(user=request.user, folder="archive")
 
     template = "email_app/archive.html"
@@ -57,9 +82,15 @@ def archive(request):
     return render(request, template, context)
 
 
-# Корзина
 @login_required
 def trash(request):
+    """
+    Функция для корзины
+
+    Направляет неавторизованного пользователя на страницу входа в аккаунт
+    Отображает все удаленные письма пользователя
+    """
+
     emails = Email.objects.filter(user=request.user, folder="trash")
 
     template = "email_app/trash.html"
@@ -68,9 +99,20 @@ def trash(request):
     return render(request, template, context)
 
 
-# Создать новое письмо
 @login_required
 def new_email(request):
+    """
+    Функция для создания нового письма
+
+    Направляет неавторизованного пользователя на страницу входа в аккаунт
+    При отправке пользователем формы email отправителя 
+    принимает вид username@email
+    Проверяет формат email получателя и существование этого пользователя
+    При наличии такого получателя, отправляет письмо
+    Письмо появляется в папке "Отправленные" у отправителя, 
+    в папке "Входящие" - у получателя
+    """
+
     user = request.user
     template = "email_app/new_email.html"
 
@@ -120,9 +162,16 @@ def new_email(request):
     return render(request, template)
 
 
-# Открыть письмо
 @login_required
 def open_email(request, pk):
+    """
+    Функция для просмотра письма
+    
+    Направляет неавторизованного пользователя на страницу входа в аккаунт
+    Открывает выбранное пользователем письмо
+    Если письмо во "Входящих" и еще не прочитано, помечается как прочитанное
+    """
+
     print(f"PK из URL: {pk}")
     email = get_object_or_404(Email, pk=pk, user=request.user)
     print(f"ID письма: {email.id}")
@@ -137,9 +186,17 @@ def open_email(request, pk):
     return render(request, template, context)
 
 
-# Удалить письмо
 @login_required
 def delete_email(request, pk):
+    """
+    Функция для удаления письма
+    
+    Направляет неавторизованного пользователя на страницу входа в аккаунт
+    Удаляет выбранное пользователем письмо
+    Запоминает папку, из которой удалялось письмо,
+    чтобы в случае восстановления оно вернулось туда же
+    """
+
     email = get_object_or_404(Email, pk=pk, user=request.user)
 
     email.previous_folder = email.folder
@@ -149,9 +206,15 @@ def delete_email(request, pk):
     return redirect("inbox")
 
 
-# Восстановить письмо
 @login_required
 def restore_email(request, pk):
+    """
+    Функция для восстановления письма из удаленных
+    
+    Направляет неавторизованного пользователя на страницу входа в аккаунт
+    Восстанавливает письмо, возвращая в ту папку, откуда оно было удалено
+    """
+
     email = get_object_or_404(Email, pk=pk, user=request.user)
 
     email.folder = email.previous_folder
@@ -161,9 +224,15 @@ def restore_email(request, pk):
     return redirect("trash")
 
 
-# Отправить письмо в архив
 @login_required
 def archive_email(request, pk):
+    """
+    Функция для отправления письма в архив
+    
+    Направляет неавторизованного пользователя на страницу входа в аккаунт
+    Отправляет выбранное пользователем письмо в архив
+    """
+
     email = get_object_or_404(Email, pk=pk, user=request.user)
 
     email.folder = "archive"
@@ -172,7 +241,13 @@ def archive_email(request, pk):
     return redirect("inbox")
 
 
-# Выйти из аккаунта
 def logout_view(request):
+    """
+    Функция для выхода из аккаунта
+
+    После выхода пользователя из аккаунта
+    перекидывает на страницу входа в аккаунт
+    """
+
     logout(request)
     return redirect("login")
