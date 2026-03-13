@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Email
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 
@@ -74,11 +75,27 @@ def new_email(request):
     template = "email_app/new_email.html"
 
     if request.method == "POST":
-        sender = request.POST.get("sender")
+        sender = f"{request.user.username}@email"
         recipient = request.POST.get("recipient")
+
+        if recipient.endswith("@email"):
+            recipient_username = recipient.replace("@email", "")
+        else:
+            template = "email_app/new_email.html"
+            context = {"error": "Имя получателя должно иметь формат username@email"}
+            return render(request, template, context)
+
+        try:
+            recipient_user = User.objects.get(username=recipient_username)
+        except User.DoesNotExist:
+            template = "email_app/new_email.html"
+            context = {"error": "Пользователя с таким email не существует"}
+            return render(request, template, context)
+
         topic = request.POST.get("topic")
         text = request.POST.get("text")
 
+        # Письмо ля отправителя
         Email.objects.create(
             user=user,
             sender=sender,
@@ -86,6 +103,16 @@ def new_email(request):
             topic=topic,
             text=text,
             folder="sent"
+        )
+
+        # Письмо для получателя
+        Email.objects.create(
+            user=recipient_user,
+            sender=sender,
+            recipient=recipient,
+            topic=topic,
+            text=text,
+            folder="inbox"
         )
 
         return redirect("sent")
