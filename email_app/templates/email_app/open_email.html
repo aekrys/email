@@ -1,33 +1,30 @@
 {% extends "email_app/base.html" %}
-{% block title %}{{ email.topic }}{% endblock %}
+{% block title %}Новое письмо{% endblock %}
 
 {% block content %}
-<div class="email-detail">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
-        <h2>{{ email.topic }}</h2>
-        <div style="display: flex; gap: 0.5rem;">
-            <a href="/email_app/{{ email.id }}/archive" class="btn" style="background: #1f2a3f;">В архив</a>
-            <a href="{% url 'delete_email' email.id %}" class="btn btn-danger">В корзину</a>
+<div class="page-header">
+    <h1>Новое письмо</h1>
+</div>
+
+<div class="form-group">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if error %}
+        <div style="color: #ff6b6b; margin-bottom: 1rem; padding: 0.5rem; background: #2d1a1a; border-radius: 4px;">
+            {{ error }}
         </div>
-    </div>
-    
-    <div class="email-meta">
-        <div><strong>От:</strong> {{ email.sender }}</div>
-        <div><strong>Кому:</strong> {{ email.recipient }}</div>
-        <div><strong>Дата:</strong> {{ email.date_time|date:"d.m.Y H:i" }}</div>
-    </div>
-    
-    <hr style="border-color: #30363d; margin: 2rem 0;">
-    
-    <div style="line-height: 1.6; white-space: pre-wrap;">
-        {{ email.text }}
-    </div>
-    
-    <hr style="border-color: #30363d; margin: 2rem 0;">
-    
-    <div style="display: flex; gap: 1rem;">
-        <a href="{% url 'new_email' %}?reply={{ email.id }}" class="btn">Ответить</a>
-        <a href="{% url 'inbox' %}" class="btn btn-danger">← Назад</a>
-    </div>
+        {% endif %}
+
+        <input type="email" name="sender" placeholder="От кого" value="{{ user.email|default:user.username }}" required>
+        <input type="email" name="recipient" placeholder="Кому" required>
+        <input type="text" name="topic" placeholder="Тема" required>
+        <textarea name="text" placeholder="Текст письма..." required></textarea>
+        
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <a href="{% url 'inbox' %}" class="btn btn-danger">Отмена</a>
+            <button type="submit" class="btn">Отправить</button>
+        </div>
+    </form>
 </div>
 {% endblock %}
