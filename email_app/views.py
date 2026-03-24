@@ -172,9 +172,7 @@ def open_email(request, pk):
     Если письмо во "Входящих" и еще не прочитано, помечается как прочитанное
     """
 
-    print(f"PK из URL: {pk}")
     email = get_object_or_404(Email, pk=pk, user=request.user)
-    print(f"ID письма: {email.id}")
 
     if email.folder == "inbox" and not email.is_read:
         email.is_read = True
